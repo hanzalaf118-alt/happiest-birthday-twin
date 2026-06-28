@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For My Twin 💙</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky: #EAF4FB;
+    --sky-deep: #D8ECFA;
+    --blue: #BFE3F7;
+    --blue-soft: #DCEEFA;
+    --navy: #2C4A63;
+    --navy-soft: #5B7891;
+    --gold: #FFE9B8;
+    --white: #FFFFFF;
+    --shadow: rgba(44,74,99,0.18);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background: radial-gradient(ellipse at top, var(--sky-deep), var(--sky) 60%);
+    font-family:'Quicksand', sans-serif;
+    color: var(--navy);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 32px 16px 60px;
+    overflow-x:hidden;
+  }
+
+  .stars-bg{
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+  }
+  .stars-bg span{
+    position:absolute;
+    width:4px;height:4px;
+    background:#fff;
+    border-radius:50%;
+    opacity:0.7;
+    animation: twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle{ 0%,100%{opacity:.2;} 50%{opacity:.9;} }
+
+  h1{
+    font-family:'Caveat', cursive;
+    font-size: 3rem;
+    margin: 6px 0 4px;
+    text-align:center;
+    color: var(--navy);
+    z-index:1;
+  }
+  .subtitle{
+    text-align:center;
+    max-width: 420px;
+    color: var(--navy-soft);
+    font-weight:600;
+    margin-bottom: 22px;
+    z-index:1;
+  }
+
+  /* progress sky bar */
+  .sky-track{
+    width: min(420px, 90vw);
+    height: 46px;
+    background: var(--white);
+    border-radius: 30px;
+    box-shadow: 0 6px 16px var(--shadow);
+    display:flex;
+    align-items:center;
+    justify-content: space-evenly;
+    margin-bottom: 26px;
+    z-index:1;
+  }
+  .slot{
+    font-size: 1.3rem;
+    opacity: 0.18;
+    transition: opacity .4s ease, transform .4s ease;
+  }
+  .slot.lit{
+    opacity: 1;
+    transform: scale(1.25);
+  }
+
+  /* game grid */
+  .board{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    width: min(420px, 92vw);
+    z-index:1;
+  }
+  .card{
+    aspect-ratio: 1/1;
+    border-radius: 16px;
+    background: var(--blue);
+    box-shadow: 0 6px 14px var(--shadow);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 1.8rem;
+    cursor:pointer;
+    user-select:none;
+    position:relative;
+    transition: transform .25s ease, background .25s ease;
+  }
+  .card:active{ transform: scale(0.95); }
+  .card .face{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:16px;
+    backface-visibility:hidden;
+    transition: transform .35s ease;
+  }
+  .card .back{
+    background: var(--blue);
+    transform: rotateY(0deg);
+    color: var(--navy-soft);
+    font-size: 1.4rem;
+  }
+  .card .front{
+    background: var(--white);
+    transform: rotateY(180deg);
+  }
+  .card.flipped .back{ transform: rotateY(180deg); }
+  .card.flipped .front{ transform: rotateY(0deg); }
+  .card.matched{
+    background: var(--gold);
+    animation: pop .4s ease;
+  }
+  .card.matched .back, .card.matched .front{ pointer-events:none; }
+  @keyframes pop{ 0%{transform:scale(1);} 50%{transform:scale(1.08);} 100%{transform:scale(1);} }
+
+  .hint{
+    margin-top: 18px;
+    color: var(--navy-soft);
+    font-size: 0.9rem;
+    font-weight:600;
+    text-align:center;
+    z-index:1;
+  }
+
+  /* letter reveal */
+  .overlay{
+    position:fixed;
+    inset:0;
+    background: rgba(44,74,99,0.45);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 20px;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity .4s ease;
+    z-index: 10;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+
+  .letter{
+    background: var(--white);
+    border-radius: 22px;
+    max-width: 520px;
+    max-height: 85vh;
+    overflow-y:auto;
+    padding: 34px 30px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    transform: translateY(40px) scale(0.96);
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .overlay.show .letter{ transform: translateY(0) scale(1); }
+
+  .letter h2{
+    font-family:'Caveat', cursive;
+    font-size: 2.4rem;
+    margin: 0 0 14px;
+    color: var(--navy);
+    text-align:center;
+  }
+  .letter p{
+    line-height: 1.7;
+    font-size: 1.02rem;
+    margin: 0 0 14px;
+    color: var(--navy);
+  }
+  .letter .sign{
+    font-family:'Caveat', cursive;
+    font-size: 1.6rem;
+    text-align:right;
+    margin-top: 10px;
+    color: var(--navy);
+  }
+  .close-btn{
+    display:block;
+    margin: 18px auto 0;
+    background: var(--blue);
+    border:none;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    color: var(--navy);
+    cursor:pointer;
+    transition: transform .2s ease;
+  }
+  .close-btn:hover{ transform: scale(1.05); }
+
+  canvas#confetti{
+    position:fixed; inset:0; pointer-events:none; z-index: 20;
+  }
+
+  /* floating hearts */
+  .heart{
+    position:fixed;
+    bottom: -30px;
+    font-size: 1.4rem;
+    color: var(--blue);
+    opacity: 0.85;
+    pointer-events:none;
+    z-index: 2;
+    animation-name: floatUp;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+  }
+  @keyframes floatUp{
+    0%{ transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+    10%{ opacity: 0.9; }
+    100%{ transform: translateY(-110vh) translateX(var(--drift)) rotate(var(--spin)); opacity: 0; }
+  }
+
+  /* hidden notes */
+  .note{
+    position: fixed;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--white);
+    box-shadow: 0 4px 10px var(--shadow);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 0.95rem;
+    cursor:pointer;
+    z-index: 5;
+    opacity: 0.55;
+    transition: transform .3s ease, opacity .3s ease;
+    animation: bob 3.4s ease-in-out infinite;
+  }
+  .note:hover{ transform: scale(1.18); opacity: 1; }
+  @keyframes bob{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-6px); } }
+
+  .note-bubble{
+    position: fixed;
+    max-width: 220px;
+    background: var(--navy);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.4;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    z-index: 30;
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+    transition: opacity .25s ease, transform .25s ease;
+    pointer-events:none;
+  }
+  .note-bubble.show{ opacity: 1; transform: translateY(0) scale(1); }
+  .note-bubble::after{
+    content:'';
+    position:absolute;
+    bottom:-6px; left: 16px;
+    width: 12px; height: 12px;
+    background: var(--navy);
+    transform: rotate(45deg);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars-bg" id="starsBg"></div>
+<canvas id="confetti"></canvas>
+
+<div class="note" style="top:14%; left:8%;" data-msg="psst. i miss you today specifically. 💙">✨</div>
+<div class="note" style="top:22%; right:9%;" data-msg="you give the best advice without even trying.">🤍</div>
+<div class="note" style="top:62%; left:6%;" data-msg="i still laugh randomly thinking about our voice notes.">⭐</div>
+<div class="note" style="top:70%; right:7%;" data-msg="no one gets my humor like you do. literally no one.">☁️</div>
+<div class="note" style="bottom:6%; left:50%; transform: translateX(-50%);" data-msg="can't wait til we're in the same time zone again.">🎀</div>
+
+<div class="note-bubble" id="noteBubble"></div>
+
+<h1>hi twin 💙</h1>
+<p class="subtitle">match every pair of stars in our sky to unlock something for you.</p>
+
+<div class="sky-track" id="skyTrack"></div>
+
+<div class="board" id="board"></div>
+
+<p class="hint">tap two cards at a time — find the matching pairs ✨</p>
+
+<div class="overlay" id="rewardOverlay">
+  <div class="letter" id="rewardLetter" style="max-width:380px; text-align:center;">
+    <h2>you found them all 🎉</h2>
+    <p>of course you did. you never miss a thing, twin.</p>
+    <p>one more wish, just for finding every little secret: may this year bring you a love that feels like coming home, friendships that never need explaining, and at least one moment so good you have to call me immediately to tell me about it. 💙</p>
+    <button class="close-btn" id="rewardCloseBtn">okay okay i love you too</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="letter" id="letter">
+    <h2>happy birthday, twin 🤍</h2>
+    <p>I don't even know how to start this without immediately wanting to hug you through the screen, so let's just pretend this is me showing up at your door with way too many balloons and an even bigger smile, because that's exactly the energy I have today.</p>
+    <p>The distance between us has never once made you feel far away. Different time zones, different cities, different everything around us — and somehow you still feel like the room right next to mine. That's not luck, that's just what happens when two people are actually twins in every way that matters, just born to different moms.</p>
+    <p>I think about how lucky I am all the time, that out of everyone in the world, I got you. Someone who remembers the small things, who shows up in the group chat at 2am because she knows, who turns ordinary days into inside jokes we'll still be laughing about when we're old and gray and probably still living in different countries, texting each other "did you see this" at the worst possible hours.</p>
+    <p>Today I want you to feel exactly how loved you are. Not just by the people near you, but by me, all the way from here, sending every good thing I have toward you. I hope this year hands you everything you've been quietly hoping for. I hope it's softer where you needed soft and braver where you needed brave. And I hope, somewhere in the middle of it, you remember that no matter how many miles sit between us, you have never once had to celebrate alone — because I am always, always celebrating you.</p>
+    <p>So happy birthday, my favorite person, my forever twin. Here's to closing the distance one visit, one call, one silly little birthday game at a time. I love you endlessly and I cannot wait for the day we get to celebrate this in person, with real cake and real hugs instead of pixels and pastel stars.</p>
+    <p class="sign">— your twin, always 💙</p>
+    <button class="close-btn" id="closeBtn">close (but I still love you)</button>
+  </div>
+</div>
+
+<script>
+// background stars
+const starsBg = document.getElementById('starsBg');
+for(let i=0;i<40;i++){
+  const s = document.createElement('span');
+  s.style.left = Math.random()*100+'%';
+  s.style.top = Math.random()*100+'%';
+  s.style.animationDelay = (Math.random()*3)+'s';
+  starsBg.appendChild(s);
+}
+
+// game setup
+const icons = ['🌙','⭐','☁️','🎀','🫧','✉️'];
+let deck = [...icons, ...icons];
+deck = deck.sort(()=>Math.random()-0.5);
+
+const board = document.getElementById('board');
+const skyTrack = document.getElementById('skyTrack');
+
+icons.forEach(()=>{
+  const slot = document.createElement('div');
+  slot.className = 'slot';
+  slot.textContent = '⭐';
+  skyTrack.appendChild(slot);
+});
+const slots = [...skyTrack.children];
+
+let flipped = [];
+let matchedCount = 0;
+let lock = false;
+
+deck.forEach((icon)=>{
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.icon = icon;
+  card.innerHTML = `
+    <div class="face back">?</div>
+    <div class="face front">${icon}</div>
+  `;
+  card.addEventListener('click', ()=> onCardClick(card));
+  board.appendChild(card);
+});
+
+function onCardClick(card){
+  if(lock || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+  card.classList.add('flipped');
+  flipped.push(card);
+
+  if(flipped.length === 2){
+    lock = true;
+    const [a,b] = flipped;
+    if(a.dataset.icon === b.dataset.icon){
+      setTimeout(()=>{
+        a.classList.add('matched');
+        b.classList.add('matched');
+        slots[matchedCount].classList.add('lit');
+        matchedCount++;
+        flipped = [];
+        lock = false;
+        if(matchedCount === icons.length){
+          setTimeout(revealLetter, 600);
+        }
+      }, 400);
+    } else {
+      setTimeout(()=>{
+        a.classList.remove('flipped');
+        b.classList.remove('flipped');
+        flipped = [];
+        lock = false;
+      }, 700);
+    }
+  }
+}
+
+function revealLetter(){
+  document.getElementById('overlay').classList.add('show');
+  launchConfetti();
+}
+document.getElementById('closeBtn').addEventListener('click', ()=>{
+  document.getElementById('overlay').classList.remove('show');
+});
+
+// lightweight confetti
+const canvas = document.getElementById('confetti');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+window.addEventListener('resize', ()=>{
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+function launchConfetti(){
+  const colors = ['#BFE3F7','#FFE9B8','#FFD6E8','#FFFFFF','#5B7891'];
+  const pieces = Array.from({length:120}, ()=>({
+    x: Math.random()*canvas.width,
+    y: -20 - Math.random()*canvas.height*0.3,
+    r: 4 + Math.random()*5,
+    c: colors[Math.floor(Math.random()*colors.length)],
+    vy: 2 + Math.random()*3,
+    vx: -1 + Math.random()*2,
+    rot: Math.random()*360,
+    vr: -4 + Math.random()*8
+  }));
+  let frame = 0;
+  function draw(){
+    frame++;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p=>{
+      p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle = p.c;
+      ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.6);
+      ctx.restore();
+    });
+    if(frame < 220){
+      requestAnimationFrame(draw);
+    } else {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+    }
+  }
+  draw();
+}
+// floating hearts
+function spawnHeart(){
+  const heart = document.createElement('div');
+  heart.className = 'heart';
+  heart.textContent = ['💙','🩵','💫'][Math.floor(Math.random()*3)];
+  const startX = Math.random()*100;
+  const drift = (-60 + Math.random()*120) + 'px';
+  const spin = (-30 + Math.random()*60) + 'deg';
+  heart.style.left = startX + 'vw';
+  heart.style.setProperty('--drift', drift);
+  heart.style.setProperty('--spin', spin);
+  heart.style.fontSize = (1 + Math.random()*1.1) + 'rem';
+  const duration = 7 + Math.random()*5;
+  heart.style.animationDuration = duration + 's';
+  document.body.appendChild(heart);
+  setTimeout(()=> heart.remove(), duration*1000 + 200);
+}
+setInterval(spawnHeart, 900);
+for(let i=0;i<4;i++) setTimeout(spawnHeart, i*300);
+
+// hidden notes
+const noteBubble = document.getElementById('noteBubble');
+let bubbleTimeout;
+const foundNotes = new Set();
+const totalNotes = document.querySelectorAll('.note').length;
+let rewardShown = false;
+
+document.querySelectorAll('.note').forEach(note=>{
+  note.addEventListener('click', (e)=>{
+    clearTimeout(bubbleTimeout);
+    noteBubble.textContent = note.dataset.msg;
+    const rect = note.getBoundingClientRect();
+    let left = rect.left;
+    let top = rect.top - 70;
+    if(left + 220 > window.innerWidth) left = window.innerWidth - 230;
+    if(left < 10) left = 10;
+    if(top < 10) top = rect.bottom + 12;
+    noteBubble.style.left = left + 'px';
+    noteBubble.style.top = top + 'px';
+    noteBubble.classList.add('show');
+    bubbleTimeout = setTimeout(()=> noteBubble.classList.remove('show'), 3200);
+
+    note.style.opacity = '1';
+    note.style.filter = 'drop-shadow(0 0 4px rgba(191,227,247,0.9))';
+    foundNotes.add(note);
+
+    if(foundNotes.size === totalNotes && !rewardShown){
+      rewardShown = true;
+      setTimeout(()=>{
+        document.getElementById('rewardOverlay').classList.add('show');
+        launchConfetti();
+      }, 900);
+    }
+  });
+});
+document.getElementById('rewardCloseBtn').addEventListener('click', ()=>{
+  document.getElementById('rewardOverlay').classList.remove('show');
+});
+</script>
+</body>
+</html>
